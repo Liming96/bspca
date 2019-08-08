@@ -1,0 +1,79 @@
+bsPCA <- function(x,k=ncol(x),type=c("Gram","predictor"),lambda=10000,ncomp=min(dim(x)),
+                     center.=TRUE,scale.=FALSE,bess_tol=1e-3,bess_maxiter=100){
+  if(length(k) == 1){
+    k <- rep(k,ncomp)
+  }else{
+    ncomp <- length(k)
+  } #Determine the number of PCs needed 'ncomp' and sparsity 'k'
+
+  p <- ncol(x)
+  X <- switch(type,
+              predictor = {
+                n<-dim(x)[1]
+                p<-dim(x)[2]
+                if (n/p>=100){
+                  cat("You may wish to restart and use a more efficient way \n")
+                  cat("let the argument x be the sample covariance/correlation matrix and set type=Gram \n")
+                }
+                X<-scale(x,center=center.,scale=scale.)
+              },
+              Gram = {
+                n<-dim(x)[1]
+                x_temp <- scale(x,center=center.,scale=scale.)
+                X <- t(x_temp)%*%x_temp/(n-1)
+              }
+  ) #Deterimine X is data matrix or covariance matrix
+
+  cen <- attr(X, "scaled:center")
+  sc <- attr(X, "scaled:scale")
+  
+  Xp <- X
+
+  svdobj <- svd(X) # singualr value decomposition
+  v <- svdobj$v # the PC of classical pca,If x is covariance matrix，v is the same.
+  totalvariance <- sum((svdobj$d)^2) # the totalvariance of x
+  alpha <- as.matrix(v[,1:ncomp,drop=FALSE])
+
+  W <- matrix(0,p, ncomp) # initialize PCs matrix
+  sdev <- rep(0,ncomp)# additional explanation standard deviation
+
+  ccs <- seq(ncomp)# Generate a vector of length ncomp
+  for(cc in ccs){
+    if(type=="predictor"){
+      res <- spca1(Xp,sparsity=k[cc],lambda,bess_tol,bess_maxiter)
+      w <- res$w
+      W[,cc] <- w
+      sdev[cc] <- t(Xp%*%w)%*%(Xp%*%w)
+    }else{
+      res <- spca2(Xp,sparsity=k[cc],lambda,bess_tol,bess_maxiter)
+      w <- res$w
+      W[,cc] <- w
+    }
+
+    # deflate the data matrix or covariance matrix
+    if(type=="predictor"){
+      Xp <- Xp-X%*%w%*%t(w)
+    }else{
+      temp <- (t(w)%*%Xp%*%w)[1]
+      Xp <- Xp-temp*w%*%t(w)
+    }
+
+    if(type=="predictor"){
+      if(cc < ncomp && all(abs(Xp)<1e-14)){
+        W <- W[,1:cc,drop=FALSE]
+        break
+      }
+    }else if(cc < ncomp && all(abs(Xp)<1e-14)){
+      W <- W[,1:cc,drop=FALSE]
+      break
+    }
+  }
+  
+  Z <- Xp%*%W
+  qrZ <- qr(Z)
+  RqrZ <- qr.R(qrZ)
+  sdev <- diag(RqrZ)^2
+
+  bspc <- list(sdev=sdev,rotation=W,X = Xp)
+  return(bspc)
+}

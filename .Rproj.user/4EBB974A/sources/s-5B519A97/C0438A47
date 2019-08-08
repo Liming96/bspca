@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1565269061328.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "C0438A47",
+    "lastKnownWriteTime" : 1565269834,
+    "last_content_update" : 1565269834642,
+    "path" : "C:/Users/lidam/Desktop/paper/R_proj/bspca2/R/mypackage.R",
+    "project_path" : "R/mypackage.R",
+    "properties" : {
+        "cursorPosition" : "108,22",
+        "scrollLine" : "99"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
