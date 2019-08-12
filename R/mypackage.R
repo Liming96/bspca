@@ -139,7 +139,7 @@ pre_spca <- function(Xp,sparsity,lambda,Q,bess_tol=1e-3,bess_maxiter=100){
   svd_act <- svd(Xp[,active,drop=FALSE])
   w[active] <- svd_act$v[,1]
 
-  obj_old <- -Inf #最开始目标函数的值
+  obj_old <- 0 #最开始目标函数的值
   ii <- 0
 
   while(ii <= bess_maxiter){
